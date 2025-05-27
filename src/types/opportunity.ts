@@ -4,6 +4,7 @@ export interface Payment {
 }
 
 export interface Opportunity {
+    id: string;
     title: string;
     company: string;
     companyEmail: string;
