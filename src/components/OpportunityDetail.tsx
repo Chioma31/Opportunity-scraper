@@ -76,15 +76,15 @@ const OpportunityDetail: React.FC<OpportunityDetailProps> = ({
                         </div>
                         {opportunity.link && opportunity.link !== "NA" && (
                             <div className="w-full sm:w-auto">
-                                <Link
-                                    href={`https://${opportunity.link}`}
+                                <a
+                                    href={opportunity.link}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
                                 >
                                     Apply Now
                                     <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                                </Link>
+                                </a>
                             </div>
                         )}
                     </div>
