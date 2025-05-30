@@ -19,21 +19,27 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
     const categories = ['All', ...new Set(opportunities.map(o => o.tags[0]).filter(Boolean))];
 
-    const filteredOpportunities = opportunities.filter(opp => {
-        const search = searchTerm.toLowerCase().trim();
-        const category = selectedCategory.toLowerCase();
 
-        // If searching, check title and company
-        const matchesSearch = search === '' ||
-            opp.title.toLowerCase().includes(search) ||
-            opp.company.toLowerCase().includes(search);
 
-        // If category is selected, check tags
-        const matchesCategory = category === 'all' ||
-            opp.tags.some(tag => tag.toLowerCase() === category);
+    // Apply search filter
 
-        return matchesSearch && matchesCategory;
+    const filteredOpportunities = opportunities.filter((opp) => {
+        if (searchTerm === "" && selectedCategory === "All") {
+            return true;
+        } else if (searchTerm !== "") {
+            const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase())
+
+            return matchesSearch ;
+        } else if (selectedCategory !== "All"){
+            const matchesCategory = opp.tags.some((tag) => tag.toLowerCase() === selectedCategory.toLowerCase())
+
+            return matchesCategory;
+        }
     });
+
+
+
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -83,21 +89,23 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
 
                 {/* Opportunities Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredOpportunities.map((opportunity) => (
-                        <OpportunityCard
-                            key={opportunity.title}
-                            opportunity={opportunity}
-                            onClick={() => onSelectOpportunity(opportunity)}
-                        />
-                    ))}
-                </div>
-
-                {filteredOpportunities.length === 0 && (
+                {filteredOpportunities.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-gray-900 text-lg">No opportunities found matching your criteria</div>
                     </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredOpportunities.map((opportunity, index) => (
+                            <OpportunityCard
+                                key={index}
+                                opportunity={opportunity}
+                                onClick={() => onSelectOpportunity(opportunity)}
+                            />
+                        ))}
+                    </div>
                 )}
+
+
             </section>
         </div>
     );
