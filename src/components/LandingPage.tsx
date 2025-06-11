@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Search, Users } from 'lucide-react';
 import { Opportunity } from '@/types/opportunity';
 import OpportunityCard from './OpportunityCard';
+import AmountRangeSlider from './AmountRangeSlider';
 
 interface LandingPageProps {
     opportunities: Opportunity[];
@@ -16,30 +17,54 @@ const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedLocation, setSelectedLocation] = useState('All');
+    const [amountRange, setAmountRange] = useState<[number, number]>([0, 0]);
 
     const categories = ['All', ...new Set(opportunities.map(o => o.tags[0]).filter(Boolean))];
+    const locations = ['All', ...new Set(opportunities.map(o => o.jobLocation).filter(Boolean))];
 
+    // Calculate min and max amounts from opportunities
+    const { minAmount, maxAmount, currency } = useMemo(() => {
+        const amounts = opportunities
+            .map(opp => opp.payment?.total || 0)
+            .filter(amount => amount > 0);
 
+        const min = Math.min(...amounts);
+        const max = Math.max(...amounts);
+        const defaultCurrency = opportunities[0]?.payment?.currency || 'NGN';
 
-    // Apply search filter
+        return {
+            minAmount: min,
+            maxAmount: max,
+            currency: defaultCurrency
+        };
+    }, [opportunities]);
+
+    // Initialize amount range when min/max are calculated
+    React.useEffect(() => {
+        if (minAmount && maxAmount && amountRange[1] === 0) {
+            setAmountRange([minAmount, maxAmount]);
+        }
+    }, [minAmount, maxAmount]);
 
     const filteredOpportunities = opportunities.filter((opp) => {
-        if (searchTerm === "" && selectedCategory === "All") {
-            return true;
+        const amount = opp.payment?.total || 0;
+        const matchesAmount = amount >= amountRange[0] && amount <= amountRange[1];
+
+        if (searchTerm === "" && selectedCategory === "All" && selectedLocation === "All") {
+            return matchesAmount;
         } else if (searchTerm !== "") {
-            const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase())
-
-            return matchesSearch ;
-        } else if (selectedCategory !== "All"){
-            const matchesCategory = opp.tags.some((tag) => tag.toLowerCase() === selectedCategory.toLowerCase())
-
-            return matchesCategory;
+            const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesSearch && matchesAmount;
+        } else if (selectedCategory !== "All") {
+            const matchesCategory = opp.tags.some((tag) => tag.toLowerCase() === selectedCategory.toLowerCase());
+            return matchesCategory && matchesAmount;
+        } else if (selectedLocation !== "All") {
+            const matchesCategory = opp.jobLocation.toLowerCase().includes(selectedLocation.toLowerCase());
+            return matchesCategory && matchesAmount;
         }
+        return false;
     });
-
-
-
-
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -65,26 +90,49 @@ const LandingPage: React.FC<LandingPageProps> = ({
             {/* Search and Filter */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-3 w-5 h-5 text-black" />
-                            <input
-                                type="text"
-                                placeholder="Search opportunities, companies, or keywords..."
-                                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-black focus:ring-blue-500 focus:border-transparent"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                    <div className="flex flex-col gap-6">
+                        {/* Search and Filters Row */}
+                        <div className="flex flex-col md:flex-row gap-4 w-full">
+                            <div className="relative  w-1/3">
+                                <Search className="absolute left-3 top-3 w-5 h-5 text-black" />
+                                <input
+                                    type="text"
+                                    placeholder="Search opportunities..."
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-black focus:ring-blue-500 focus:border-transparent"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <select
+                                className="px-4 py-3 border text-black border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-1/3"
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                            >
+                                {categories.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                            <select
+                                className="px-4 py-3 border text-black border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-1/3"
+                                value={selectedLocation}
+                                onChange={(e) => setSelectedLocation(e.target.value)}
+                            >
+                                {locations.map(loc => (
+                                    <option key={loc} value={loc}>{loc}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Amount Range Slider */}
+                        <div className="border-t pt-6">
+                            <AmountRangeSlider
+                                min={minAmount}
+                                max={maxAmount}
+                                value={amountRange}
+                                onValueChange={setAmountRange}
+                                currency={currency}
                             />
                         </div>
-                        <select
-                            className="px-4 py-3 border text-black border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
-                        >
-                            {categories.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
                     </div>
                 </div>
 
@@ -104,8 +152,6 @@ const LandingPage: React.FC<LandingPageProps> = ({
                         ))}
                     </div>
                 )}
-
-
             </section>
         </div>
     );
