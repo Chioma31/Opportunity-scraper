@@ -93,7 +93,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     <div className="flex flex-col gap-6">
                         {/* Search and Filters Row */}
                         <div className="flex flex-col md:flex-row gap-4 w-full">
-                            <div className="relative  w-1/3">
+                            <div className="relative  w-full md:w-1/3">
                                 <Search className="absolute left-3 top-3 w-5 h-5 text-black" />
                                 <input
                                     type="text"
@@ -104,7 +104,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                                 />
                             </div>
                             <select
-                                className="px-4 py-3 border text-black border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-1/3"
+                                className="px-4 py-3 border text-black border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-1/3"
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
                             >
@@ -113,7 +113,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                                 ))}
                             </select>
                             <select
-                                className="px-4 py-3 border text-black border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-1/3"
+                                className="px-4 py-3 border text-black border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full  md:w-1/3"
                                 value={selectedLocation}
                                 onChange={(e) => setSelectedLocation(e.target.value)}
                             >
